@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export const getVibeModeHtml = (webview: vscode.Webview, nonce: string): string => {
+export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredBySrc: string): string => {
   const csp = [
     "default-src 'none'",
     `img-src ${webview.cspSource} https:`,
@@ -48,6 +48,17 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string): string 
       margin: 0 auto;
       display: grid;
       gap: 18px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 10px;
+      opacity: 0.9;
+    }
+
+    footer img {
+      height: 22px;
     }
 
     header {
@@ -243,6 +254,10 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string): string 
       </div>
       <div id="output" aria-live="polite"></div>
     </section>
+
+    <footer>
+      <img src="${poweredBySrc}" alt="Powered by BuildrLab" />
+    </footer>
   </div>
 
   <script nonce="${nonce}">
@@ -274,7 +289,7 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string): string 
         providerMetaEl.textContent = 'No providers configured.';
         return;
       }
-      providerMetaEl.textContent = `${selected.baseUrl} | ${selected.apiKeyEnvVar}`;
+      providerMetaEl.textContent = String(selected.baseUrl) + ' | ' + String(selected.apiKeyEnvVar);
     };
 
     const renderProviders = () => {
@@ -282,7 +297,7 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string): string 
       providers.forEach((provider) => {
         const option = document.createElement('option');
         option.value = provider.id;
-        option.textContent = `${provider.label} (${provider.baseUrl}, ${provider.apiKeyEnvVar})`;
+        option.textContent = String(provider.label) + ' (' + String(provider.baseUrl) + ', ' + String(provider.apiKeyEnvVar) + ')';
         selectEl.appendChild(option);
       });
 
@@ -316,7 +331,7 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string): string 
         providers = message.providers || [];
         model = message.model || '';
         renderProviders();
-        modelMetaEl.textContent = model ? `Model: ${model}` : '';
+        modelMetaEl.textContent = model ? 'Model: ' + String(model) : '';
         setStatus('Ready.', '');
         return;
       }

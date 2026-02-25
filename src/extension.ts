@@ -106,7 +106,12 @@ class VibeModePanel {
     this.extensionUri = extensionUri;
 
     const nonce = getNonce();
-    this.panel.webview.html = getVibeModeHtml(this.panel.webview, nonce);
+
+    const poweredByUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(this.extensionUri, 'assets', 'powered-by-buildrlab.svg')
+    );
+
+    this.panel.webview.html = getVibeModeHtml(this.panel.webview, nonce, poweredByUri.toString());
 
     this.panel.webview.onDidReceiveMessage(
       (message) => {
