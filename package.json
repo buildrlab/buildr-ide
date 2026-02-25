@@ -1,0 +1,116 @@
+{
+  "name": "buildr-ide",
+  "displayName": "Buildr-IDE",
+  "description": "Buildr-IDE extension scaffold",
+  "version": "0.1.0",
+  "publisher": "buildrlab",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onCommand:buildr.initProject",
+    "onCommand:buildr.openVibeMode"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "buildr.initProject",
+        "title": "Buildr: Init Project"
+      },
+      {
+        "command": "buildr.openVibeMode",
+        "title": "Buildr: Open Vibe Mode"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "buildr",
+          "title": "Buildr",
+          "icon": "resources/buildr.svg"
+        }
+      ]
+    },
+    "views": {
+      "buildr": [
+        {
+          "id": "buildr.view",
+          "name": "Buildr"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Buildr",
+      "properties": {
+        "buildr.providers": {
+          "type": "array",
+          "default": [
+            {
+              "id": "openai",
+              "label": "OpenAI Compatible",
+              "baseUrl": "https://api.openai.com/v1",
+              "apiKeyEnvVar": "OPENAI_API_KEY"
+            }
+          ],
+          "description": "List of OpenAI-compatible providers for Vibe Mode.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "baseUrl",
+              "apiKeyEnvVar"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Stable provider identifier."
+              },
+              "label": {
+                "type": "string",
+                "description": "Display name for the provider."
+              },
+              "baseUrl": {
+                "type": "string",
+                "description": "Base URL for the OpenAI-compatible API."
+              },
+              "apiKeyEnvVar": {
+                "type": "string",
+                "description": "Environment variable name that contains the API key."
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "Optional API key for the provider. Store in user settings and do not commit."
+              }
+            }
+          }
+        },
+        "buildr.model": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "description": "Model used for chat completions."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --ext .ts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
