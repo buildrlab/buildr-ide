@@ -1,6 +1,13 @@
 # Buildr-IDE
 
-Buildr-IDE is a VS Code extension-first project scaffold. It adds a Buildr activity bar, commands, and the Vibe Mode webview panel for OpenAI-compatible chat completions.
+Buildr-IDE is a VS Code extension-first project scaffold. It adds a **Buildr activity bar**, commands, and the **Vibe Mode** webview panel for OpenAI-compatible chat completions.
+
+## Install (VSIX)
+
+1. Download the latest `buildr-ide-*.vsix` from GitHub Releases.
+2. In VS Code:
+   - `Extensions` → `…` → **Install from VSIX…**
+   - or run: `code --install-extension buildr-ide-0.1.0.vsix`
 
 ## Features
 
@@ -48,10 +55,17 @@ pnpm typecheck
 pnpm test
 ```
 
-To run the extension locally:
+### Run locally
 
 1. Open this folder in VS Code.
-2. Run the **Buildr: Open Vibe Mode** command or press `F5` to launch an Extension Development Host.
+2. Press `F5` to launch an **Extension Development Host**.
+3. Run the **Buildr: Open Vibe Mode** command.
+
+### Build a VSIX
+
+```bash
+pnpm vsix
+```
 
 ## Notes
 

@@ -1,0 +1,26 @@
+**/.git/**
+**/.github/**
+**/node_modules/**
+
+# Source / tests
+src/**
+test/**
+vitest.config.*
+tsconfig*.json
+.eslintrc.*
+
+# Locks / workspace metadata
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# Keep compiled output only
+!out/**
+
+# Keep extension resources
+!resources/**
+!assets/**
+!docs/**
+
+# Keep top-level docs
+!README.md
+!LICENSE
