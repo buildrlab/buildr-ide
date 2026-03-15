@@ -18,7 +18,10 @@
   "main": "./out/extension.js",
   "activationEvents": [
     "onCommand:buildr.initProject",
-    "onCommand:buildr.openVibeMode"
+    "onCommand:buildr.openVibeMode",
+    "onCommand:buildr.reviewSelection",
+    "onCommand:buildr.reviewFile",
+    "onCommand:buildr.reviewFromStatusBar"
   ],
   "contributes": {
     "commands": [
@@ -29,8 +32,33 @@
       {
         "command": "buildr.openVibeMode",
         "title": "Buildr: Open Vibe Mode"
+      },
+      {
+        "command": "buildr.reviewSelection",
+        "title": "Buildr: Review Selection"
+      },
+      {
+        "command": "buildr.reviewFile",
+        "title": "Buildr: Review File"
+      },
+      {
+        "command": "buildr.reviewFromStatusBar",
+        "title": "Buildr: Review Code"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "buildr.reviewSelection",
+          "when": "editorHasSelection",
+          "group": "buildr@1"
+        },
+        {
+          "command": "buildr.reviewFile",
+          "group": "buildr@2"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -98,6 +126,21 @@
           "type": "string",
           "default": "gpt-4o-mini",
           "description": "Model used for chat completions."
+        },
+        "buildrIde.review.autoReview": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically run AI code review on file save."
+        },
+        "buildrIde.review.model": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "description": "Model to use for AI code reviews."
+        },
+        "buildrIde.review.maxLines": {
+          "type": "number",
+          "default": 200,
+          "description": "Maximum number of lines to review when reviewing an entire file."
         }
       }
     }
