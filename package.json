@@ -18,7 +18,9 @@
   "main": "./out/extension.js",
   "activationEvents": [
     "onCommand:buildr.initProject",
-    "onCommand:buildr.openVibeMode"
+    "onCommand:buildr.openVibeMode",
+    "onCommand:buildr.codeReview",
+    "onCommand:buildr.deployProject"
   ],
   "contributes": {
     "commands": [
@@ -29,6 +31,14 @@
       {
         "command": "buildr.openVibeMode",
         "title": "Buildr: Open Vibe Mode"
+      },
+      {
+        "command": "buildr.codeReview",
+        "title": "Buildr: Code Review"
+      },
+      {
+        "command": "buildr.deployProject",
+        "title": "Buildr: Deploy Project"
       }
     ],
     "viewsContainers": {

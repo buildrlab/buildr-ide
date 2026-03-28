@@ -240,6 +240,11 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
         <span id="provider-meta">Loading providers...</span>
         <span id="model-meta"></span>
       </div>
+      <button id="attach-context" type="button" style="align-self: start; font-size: 13px; padding: 7px 14px;">📎 Attach file context</button>
+      <div id="file-context" style="display:none; background: #f7f5f0; border-radius: 12px; border: 1px solid rgba(28,26,22,0.15); padding: 12px 14px; font-size: 13px;">
+        <strong id="file-context-name"></strong>
+        <pre style="margin: 8px 0 0; white-space: pre-wrap; max-height: 200px; overflow: auto; font-size: 12px; line-height: 1.4;"><code id="file-context-content"></code></pre>
+      </div>
     </section>
 
     <section class="card" style="--delay: 0.2s;">
@@ -345,7 +350,22 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
         outputEl.textContent = message.message || 'Something went wrong.';
         setStatus('Error.', 'error');
         setRunning(false);
+        return;
       }
+      if (message.type === 'fileContext') {
+        fileContextName.textContent = message.filename || 'No file';
+        fileContextContent.textContent = message.content || '';
+        fileContextEl.style.display = 'block';
+      }
+    });
+
+    const attachBtn = document.getElementById('attach-context');
+    const fileContextEl = document.getElementById('file-context');
+    const fileContextName = document.getElementById('file-context-name');
+    const fileContextContent = document.getElementById('file-context-content');
+
+    attachBtn.addEventListener('click', () => {
+      vscode.postMessage({ type: 'requestFileContext' });
     });
 
     vscode.postMessage({ type: 'ready' });
