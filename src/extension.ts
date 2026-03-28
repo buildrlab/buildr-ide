@@ -8,22 +8,29 @@ import { BuildrProviderConfig } from './core/types';
 import { getVibeModeHtml } from './webview/vibeModeHtml';
 
 export const activate = (context: vscode.ExtensionContext): void => {
-  const viewProvider = new BuildrViewProvider();
-  context.subscriptions.push(
-    vscode.window.registerTreeDataProvider('buildr.view', viewProvider),
-    vscode.commands.registerCommand('buildr.initProject', () => initProject()),
-    vscode.commands.registerCommand('buildr.openVibeMode', () => VibeModePanel.createOrShow(context.extensionUri)),
-    vscode.commands.registerCommand('buildr.codeReview', () => codeReview()),
-    vscode.commands.registerCommand('buildr.deployProject', () => deployProject()),
-    vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('buildr') && VibeModePanel.currentPanel) {
-        VibeModePanel.currentPanel.postInit();
-      }
-    })
-  );
+  try {
+    const viewProvider = new BuildrViewProvider();
+    context.subscriptions.push(
+      vscode.window.registerTreeDataProvider('buildr.view', viewProvider),
+      vscode.commands.registerCommand('buildr.initProject', () => initProject()),
+      vscode.commands.registerCommand('buildr.openVibeMode', () => VibeModePanel.createOrShow(context.extensionUri)),
+      vscode.commands.registerCommand('buildr.codeReview', () => codeReview()),
+      vscode.commands.registerCommand('buildr.deployProject', () => deployProject()),
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('buildr') && VibeModePanel.currentPanel) {
+          VibeModePanel.currentPanel.postInit();
+        }
+      })
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error during activation.';
+    vscode.window.showErrorMessage(`Buildr: failed to activate extension. ${message}`);
+  }
 };
 
-export const deactivate = (): void => undefined;
+export const deactivate = (): void => {
+  console.log('Buildr IDE deactivated');
+};
 
 const initProject = async (): Promise<void> => {
   const workspace = vscode.workspace.workspaceFolders?.[0];
@@ -49,7 +56,7 @@ const initProject = async (): Promise<void> => {
     vscode.window.showInformationMessage('Buildr: project initialized.');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to write buildr-ide.json.';
-    vscode.window.showErrorMessage(`Buildr: ${message}`);
+    vscode.window.showErrorMessage(`Buildr: ${message} Please check file permissions and try again.`);
   }
 };
 
@@ -307,20 +314,37 @@ class VibeModePanel {
       return;
     }
 
-    try {
-      const content = await createChatCompletion({
-        baseUrl: provider.baseUrl,
-        apiKey,
-        model,
-        prompt
+    if (!validateApiKey(apiKey)) {
+      void this.panel.webview.postMessage({
+        type: 'error',
+        message: 'API key looks like a placeholder. Update buildr.providers in VS Code settings.'
       });
+      return;
+    }
+
+    try {
+      const timeoutMs = 30_000;
+      const content = await Promise.race([
+        createChatCompletion({
+          baseUrl: provider.baseUrl,
+          apiKey,
+          model,
+          prompt
+        }),
+        new Promise<never>((_resolve, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs)
+        )
+      ]);
 
       void this.panel.webview.postMessage({
         type: 'result',
         text: content
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Request failed.';
+      const isTimeout = error instanceof Error && error.message === 'TIMEOUT';
+      const message = isTimeout
+        ? 'Request timed out. Check your provider configuration.'
+        : error instanceof Error ? error.message : 'Request failed.';
       void this.panel.webview.postMessage({
         type: 'error',
         message
@@ -353,6 +377,17 @@ const selectProvider = (
   }
 
   return providers.find((provider) => provider.id === providerId) ?? providers[0];
+};
+
+const validateApiKey = (key: string): boolean => {
+  const trimmed = key.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (trimmed === 'your-api-key-here') {
+    return false;
+  }
+  return true;
 };
 
 const getNonce = (): string => {
