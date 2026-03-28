@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - dev
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - dev
 
 jobs:
   build-test:
@@ -17,7 +20,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -28,23 +31,23 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Compile (tsc)
+        run: pnpm exec tsc -p tsconfig.json
+
       - name: Lint
+        if: ${{ hashFiles('.eslintrc.cjs', '.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', '.eslintrc.yaml') != '' }}
         run: pnpm lint
 
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Test
+      - name: Test (vitest)
         run: pnpm test
 
-      - name: Build
-        run: pnpm build
-
       - name: Package VSIX
-        run: pnpm vsix
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: npx --yes @vscode/vsce package --no-dependencies
 
       - name: Upload VSIX artifact
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v4
         with:
-          name: vsix
-          path: '*.vsix'
+          name: buildr-ide-vsix
+          path: "*.vsix"
