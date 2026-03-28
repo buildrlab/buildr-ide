@@ -35,4 +35,40 @@ describe('createChatCompletion', () => {
       messages: [{ role: 'user', content: 'Hello' }]
     });
   });
+
+  it('throws on malformed JSON response', async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => {
+        throw new SyntaxError('Unexpected token');
+      }
+    });
+
+    await expect(
+      createChatCompletion({
+        baseUrl: 'https://example.com/v1/',
+        apiKey: 'test-key',
+        model: 'gpt-test',
+        prompt: 'Hello',
+        fetchFn: fetchFn as unknown as typeof fetch
+      })
+    ).rejects.toThrow();
+  });
+
+  it('throws when choices array is empty', async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [] })
+    });
+
+    await expect(
+      createChatCompletion({
+        baseUrl: 'https://example.com/v1/',
+        apiKey: 'test-key',
+        model: 'gpt-test',
+        prompt: 'Hello',
+        fetchFn: fetchFn as unknown as typeof fetch
+      })
+    ).rejects.toThrow('Provider response did not include content.');
+  });
 });

@@ -199,6 +199,36 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
       white-space: pre-wrap;
     }
 
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(15, 118, 110, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 20px auto;
+    }
+
+    .spinner-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+    }
+
+    .validation-error {
+      color: #b42318;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 4px;
+      min-height: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @keyframes rise {
       from {
         opacity: 0;
@@ -249,7 +279,8 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
 
     <section class="card" style="--delay: 0.2s;">
       <label for="prompt">Prompt</label>
-      <textarea id="prompt" placeholder="Ask Buildr for a vibe check..."></textarea>
+      <textarea id="prompt" placeholder="Ask Buildr for a vibe check..." maxlength="4000"></textarea>
+      <div id="prompt-error" class="validation-error" aria-live="polite"></div>
     </section>
 
     <section class="card" style="--delay: 0.3s;">
@@ -274,6 +305,7 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
     const runButton = document.getElementById('run');
     const statusEl = document.getElementById('status');
     const outputEl = document.getElementById('output');
+    const promptErrorEl = document.getElementById('prompt-error');
 
     let providers = [];
     let model = '';
@@ -314,15 +346,41 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
 
     selectEl.addEventListener('change', updateProviderMeta);
 
+    const validatePrompt = (value) => {
+      const trimmed = value.trim();
+      if (!trimmed || trimmed.length < 3) {
+        return 'Please enter a prompt (minimum 3 characters)';
+      }
+      if (value.length > 4000) {
+        return 'Prompt too long (max 4000 characters)';
+      }
+      return '';
+    };
+
+    const showSpinner = () => {
+      outputEl.innerHTML = '<div class="spinner-container"><div class="spinner"></div></div>';
+    };
+
+    const hideSpinner = (text) => {
+      outputEl.textContent = text;
+    };
+
+    promptEl.addEventListener('input', () => {
+      promptErrorEl.textContent = '';
+    });
+
     runButton.addEventListener('click', () => {
       const prompt = promptEl.value.trim();
-      if (!prompt) {
+      const validationError = validatePrompt(promptEl.value);
+      if (validationError) {
+        promptErrorEl.textContent = validationError;
         setStatus('Add a prompt to continue.', 'error');
         return;
       }
+      promptErrorEl.textContent = '';
       setStatus('Sending prompt...', '');
       setRunning(true);
-      outputEl.textContent = '';
+      showSpinner();
       vscode.postMessage({
         type: 'run',
         prompt,
@@ -341,13 +399,13 @@ export const getVibeModeHtml = (webview: vscode.Webview, nonce: string, poweredB
         return;
       }
       if (message.type === 'result') {
-        outputEl.textContent = message.text || '';
+        hideSpinner(message.text || '');
         setStatus('Completed.', 'ok');
         setRunning(false);
         return;
       }
       if (message.type === 'error') {
-        outputEl.textContent = message.message || 'Something went wrong.';
+        hideSpinner(message.message || 'Something went wrong.');
         setStatus('Error.', 'error');
         setRunning(false);
         return;
