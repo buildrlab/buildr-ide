@@ -120,13 +120,13 @@
     "vsix": "pnpm build && npx --yes @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
-    "@types/vscode": "^1.110.0",
-    "@typescript-eslint/eslint-plugin": "^8.58.0",
-    "@typescript-eslint/parser": "^8.58.0",
+    "@types/node": "^25.6.0",
+    "@types/vscode": "^1.115.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
     "eslint": "^10.2.0",
     "typescript": "^6.0.2",
-    "vite": "^8.0.5",
-    "vitest": "^4.1.2"
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4"
   }
 }
